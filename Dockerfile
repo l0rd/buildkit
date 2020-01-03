@@ -210,12 +210,12 @@ WORKDIR /opt/cni/bin
 RUN curl -Ls https://github.com/containernetworking/plugins/releases/download/$CNI_VERSION/cni-plugins-$TARGETOS-$TARGETARCH-$CNI_VERSION.tgz | tar xzv
 
 FROM buildkit-base AS integration-tests-base
-ENV BUILDKIT_INTEGRATION_ROOTLESS_IDPAIR="1000:1000"
+ENV BUILDKIT_INTEGRATION_ROOTLESS_IDPAIR="1000550000:1000550000"
 RUN apt-get install -y --no-install-recommends uidmap sudo vim iptables \ 
-  && useradd --create-home --home-dir /home/user --uid 1000 -s /bin/sh user \
-  && echo "XDG_RUNTIME_DIR=/run/user/1000; export XDG_RUNTIME_DIR" >> /home/user/.profile \
-  && mkdir -m 0700 -p /run/user/1000 \
-  && chown -R user /run/user/1000 /home/user \
+  && useradd --create-home --home-dir /home/user --uid 1000550000 -s /bin/sh user \
+  && echo "XDG_RUNTIME_DIR=/run/user/1000550000; export XDG_RUNTIME_DIR" >> /home/user/.profile \
+  && mkdir -m 0700 -p /run/user/1000550000 \
+  && chown -R user /run/user/1000550000 /home/user \
   && update-alternatives --set iptables /usr/sbin/iptables-legacy
 # musl is needed to directly use the registry binary that is built on alpine
 #ENV BUILDKIT_INTEGRATION_CONTAINERD_EXTRA="containerd-1.2=/opt/containerd-old/bin"
@@ -255,10 +255,10 @@ RUN apk add --no-cache git
 COPY --from=idmap /usr/bin/newuidmap /usr/bin/newuidmap
 COPY --from=idmap /usr/bin/newgidmap /usr/bin/newgidmap
 RUN chmod u+s /usr/bin/newuidmap /usr/bin/newgidmap \
-  && adduser -D -u 1000 user \
-  && mkdir -p /run/user/1000 /home/user/.local/tmp /home/user/.local/share/buildkit \
-  && chown -R user /run/user/1000 /home/user \
-  && echo user:100000:65536 | tee /etc/subuid | tee /etc/subgid \
+  && adduser -D -u 1000550000 user \
+  && mkdir -p /run/user/1000550000 /home/user/.local/tmp /home/user/.local/share/buildkit \
+  && chown -R user /run/user/1000550000 /home/user \
+  && echo user:10005500000:65536000000 | tee /etc/subuid | tee /etc/subgid \
   && passwd -l root
 # As of v3.8.1, Alpine does not set SUID bit on the busybox version of /bin/su.
 # However, future version may set SUID bit on /bin/su.
@@ -277,9 +277,9 @@ COPY examples/buildctl-daemonless/buildctl-daemonless.sh /usr/bin/
 USER user
 ENV HOME /home/user
 ENV USER user
-ENV XDG_RUNTIME_DIR=/run/user/1000
+ENV XDG_RUNTIME_DIR=/run/user/1000550000
 ENV TMPDIR=/home/user/.local/tmp
-ENV BUILDKIT_HOST=unix:///run/user/1000/buildkit/buildkitd.sock
+ENV BUILDKIT_HOST=unix:///run/user/1000550000/buildkit/buildkitd.sock
 VOLUME /home/user/.local/share/buildkit
 ENTRYPOINT ["rootlesskit", "buildkitd"]
 
